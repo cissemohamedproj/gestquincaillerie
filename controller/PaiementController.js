@@ -87,7 +87,7 @@ exports.getPagignationPaiements = async (req, res) => {
         path: 'commande',
         populate: { path: 'items.produit' },
       })
-      .sort({ paymentDate: -1 });
+      .sort({ paiementDate: -1 });
 
     const totalPages = await Paiement.countDocuments();
 

@@ -103,7 +103,7 @@ exports.getPagignationCommandes = async (req, res) => {
 
     // 4️ Factures paginées
     const factures = await Paiement.find()
-      .sort({ commandeDate: -1 })
+      .sort({ paiementDate: -1 })
       .limit(limit)
       .skip(skip)
       .populate({
