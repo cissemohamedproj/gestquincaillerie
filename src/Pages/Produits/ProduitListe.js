@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Button,
   Card,
@@ -37,16 +37,18 @@ export default function ProduitListe() {
   const [searchTerm, setSearchTerm] = useState('');
 
   // Fontion pour Rechercher
-  const filterSearchProduits = produits?.filter((prod) => {
-    const search = searchTerm.toLowerCase();
+  const filterSearchProduits = useMemo(() => {
+    return produits?.filter((prod) => {
+      const search = searchTerm.toLowerCase();
 
-    return (
-      prod?.name?.toLowerCase().includes(search) ||
-      prod?.category?.toLowerCase().includes(search) ||
-      prod?.stock?.toString().includes(search) ||
-      prod?.price?.toString().includes(search)
-    );
-  });
+      return (
+        prod?.name?.toLowerCase().includes(search) ||
+        prod?.category?.toLowerCase().includes(search) ||
+        prod?.stock?.toString().includes(search) ||
+        prod?.price?.toString().includes(search)
+      );
+    });
+  }, [produits, searchTerm]);
 
   // Utilisation de useNavigate pour la navigation
   const navigate = useNavigate();
@@ -59,9 +61,13 @@ export default function ProduitListe() {
     setForm_modal(!form_modal);
   }
 
-  const totalProduitAchatPrice = filterSearchProduits?.reduce(
-    (acc, item) => (acc += item?.achatPrice * item?.stock),
-    0
+  const totalProduitAchatPrice = useMemo(
+    () =>
+      filterSearchProduits?.reduce(
+        (acc, item) => (acc += item?.achatPrice * item?.stock),
+        0
+      ),
+    [filterSearchProduits]
   );
   // -----------------------------------------------------------------
   // -----------------------------------------------------------------

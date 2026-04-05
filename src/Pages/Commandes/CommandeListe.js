@@ -6,22 +6,22 @@ import {
   formatPhoneNumber,
   formatPrice,
 } from '../components/capitalizeFunction';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import Swal from 'sweetalert2';
 import {
   useAllCommandes,
   useDeleteCommande,
-  usePaginationCommandes,
+  // usePaginationCommandes,
 } from '../../Api/queriesCommande';
 import { useNavigate } from 'react-router-dom';
 import { connectedUserRole } from '../Authentication/userInfos';
 
 export default function CommandeListe() {
-  const [page, setPage] = useState(1);
-  const limit = 500;
+  // const [page, setPage] = useState(1);
+  // const limit = 500;
   // Afficher toutes les commandes
-  const { data: commandes } = useAllCommandes();
-  const { data: items, isLoading, error } = usePaginationCommandes(page, limit);
+  const { data: commandes, isLoading, error } = useAllCommandes();
+  // const { data: items, isLoading, error } = usePaginationCommandes(page, limit);
   const { mutate: deleteCommandeAndRestorStock } = useDeleteCommande();
 
   // State de chargement pour la suppression
@@ -118,57 +118,85 @@ export default function CommandeListe() {
   const [delivredCommande, setDelivredCommande] = useState(false);
   const [notDelivredCommande, setNotdelivredCommande] = useState(false);
 
-  // Fonction de Recherche dans la barre de recherche
-  const filterCommandes = items?.commandes?.data
-    ?.filter((comm) => {
-      const search = searchTerm.toLowerCase();
-      return (
-        comm?.fullName.toLowerCase().includes(search) ||
-        comm?.phoneNumber.toString().includes(search) ||
-        comm?.adresse.toLowerCase().includes(search) ||
-        comm?.items?.length.toString().includes(search) ||
-        comm?.statut.toLowerCase().includes(search) ||
-        new Date(comm?.createdAt || comm?.commandeDate)
+  const commandeIdsWithFacture = useMemo(() => {
+    const factures = commandes?.factures;
+    const ids = new Set();
+    if (!Array.isArray(factures)) return ids;
+    for (let i = 0; i < factures.length; i++) {
+      const id = factures[i]?.commande?._id;
+      if (id != null) ids.add(id);
+    }
+    return ids;
+  }, [commandes?.factures]);
+
+  const {
+    filterCommandes,
+    totalCommandesLivres,
+    commandesEnAttente,
+    commandesEnCours,
+  } = useMemo(() => {
+    const liste = commandes?.commandesListe;
+    if (!liste) {
+      return {
+        filterCommandes: undefined,
+        totalCommandesLivres: undefined,
+        commandesEnAttente: undefined,
+        commandesEnCours: undefined,
+      };
+    }
+    const search = searchTerm.toLowerCase();
+    const todayStr = new Date().toLocaleDateString();
+    const filtered = liste.filter((comm) => {
+      if (
+        !comm?.fullName.toLowerCase().includes(search) &&
+        !comm?.phoneNumber.toString().includes(search) &&
+        !comm?.adresse.toLowerCase().includes(search) &&
+        !comm?.items?.length.toString().includes(search) &&
+        !comm?.statut.toLowerCase().includes(search) &&
+        !new Date(comm?.createdAt || comm?.commandeDate)
           .toLocaleDateString('fr-FR')
           .includes(search)
-      );
-    })
-    ?.filter((item) => {
+      ) {
+        return false;
+      }
       if (todayCommande) {
-        return (
-          new Date(item?.createdAt).toLocaleDateString() ===
-          new Date().toLocaleDateString()
-        );
+        if (
+          new Date(comm?.createdAt).toLocaleDateString() !== todayStr
+        ) {
+          return false;
+        }
       }
-      return true;
-    })
-    ?.filter((item) => {
-      if (delivredCommande) {
-        return item.statut.toLowerCase() === 'en cours';
+      if (delivredCommande && comm.statut.toLowerCase() !== 'en cours') {
+        return false;
       }
-      return true;
-    })
-    ?.filter((item) => {
-      if (notDelivredCommande) {
-        return item.statut.toLowerCase() === 'en attente';
+      if (notDelivredCommande && comm.statut.toLowerCase() !== 'en attente') {
+        return false;
       }
       return true;
     });
-
-  // Total Commandes Livrés
-  const totalCommandesLivres = filterCommandes?.filter(
-    (comm) => comm?.statut.toLowerCase() === 'livré'
-  )?.length;
-
-  // Commande en Attente
-  const commandesEnAttente = filterCommandes?.filter((comm) => {
-    return comm?.statut.toLowerCase() === 'en attente';
-  });
-
-  // Commande en Cours
-  const commandesEnCours = filterCommandes?.filter(
-    (comm) => comm?.statut.toLowerCase() === 'en cours'
-  );
+    let livres = 0;
+    const enAttente = [];
+    const enCours = [];
+    for (let i = 0; i < filtered.length; i++) {
+      const comm = filtered[i];
+      const st = comm?.statut?.toLowerCase();
+      if (st === 'livré') livres++;
+      else if (st === 'en attente') enAttente.push(comm);
+      else if (st === 'en cours') enCours.push(comm);
+    }
+    return {
+      filterCommandes: filtered,
+      totalCommandesLivres: livres,
+      commandesEnAttente: enAttente,
+      commandesEnCours: enCours,
+    };
+  }, [
+    commandes?.commandesListe,
+    searchTerm,
+    todayCommande,
+    delivredCommande,
+    notDelivredCommande,
+  ]);
 
   return (
     <React.Fragment>
@@ -295,7 +323,7 @@ export default function CommandeListe() {
                           </span>
                         </Col>
                       </Row>
-                      <div className='d-flex gap-3 justify-content-end align-items-center mt-4'>
+                      {/* <div className='d-flex gap-3 justify-content-end align-items-center mt-4'>
                         <Button
                           disabled={page === 1}
                           color='secondary'
@@ -322,7 +350,7 @@ export default function CommandeListe() {
                         >
                           Suivant
                         </Button>
-                      </div>
+                      </div> */}
 
                       {error && (
                         <div className='text-danger text-center'>
@@ -378,10 +406,7 @@ export default function CommandeListe() {
                                   filterCommandes?.map((comm) => (
                                     <tr key={comm?._id}>
                                       <th scope='row'>
-                                        {commandes?.factures?.some(
-                                          (fact) =>
-                                            fact?.commande?._id === comm?._id
-                                        ) ? (
+                                        {commandeIdsWithFacture.has(comm?._id) ? (
                                           <i className='fas fa-check-circle text-success'></i>
                                         ) : (
                                           <i className='fas fa-times-circle text-danger'></i>
