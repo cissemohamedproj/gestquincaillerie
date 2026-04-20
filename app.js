@@ -8,7 +8,6 @@ const paiementRoute = require('./routes/PaiementRoute');
 const paiementHistoriqueRoute = require('./routes/PaiementHistoriqueRoute');
 const approvisonementsRoute = require('./routes/ApprovisonementRoute');
 const depenseRoute = require('./routes/DepenseRoute');
-const achatRoute = require('./routes/AchatRoute.');
 const livraisonHistoriqueRoute = require('./routes/LivraisonHistoriqueRoute');
 const deivisRoute = require('./routes/DevisRoute');
 
@@ -61,7 +60,6 @@ app.use('/api/livraison_historique', livraisonHistoriqueRoute);
 app.use('/api/depenses', depenseRoute);
 
 // Utilisation des routes Achat
-app.use('/api/achats', achatRoute);
 
 //  Exporter le fichier APP
 module.exports = app;
