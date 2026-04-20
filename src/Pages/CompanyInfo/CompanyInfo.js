@@ -13,9 +13,9 @@ import outil_10 from '../../assets/images/outil (10).png';
 import outil_11 from '../../assets/images/outil (11).png';
 import outil_12 from '../../assets/images/outil (12).png';
 
-const companyName = 'Quincaillerie DUBAI';
+const companyName = 'Quincaillerie Cisse & Frère';
 
-const companyLittleName = 'Quincaillerie DUBAI';
+const companyLittleName = 'Quincaillerie Cisse & Frère';
 const companyServices = 'Fer à Beton - Ciment - Plomberie - Sanitaire';
 
 const companyOwnerName = 'Chez MOHAMED WOROFANA';
@@ -23,7 +23,7 @@ const companyOwnerName = 'Chez MOHAMED WOROFANA';
 const companyAdresse =
   "Kabala sur la route d'université en face de la station PETRO BAMA";
 
-const companyTel = '84-40-40-84 / 77-49-42-95 / 76-17-97-87';
+const companyTel = '72 11 56 99 / 99 43 09 51 / 77 52 31 77';
 
 export {
   companyLogo,
