@@ -18,7 +18,7 @@ const companyName = 'Quincaillerie Cisse & Frère';
 const companyLittleName = 'Quincaillerie Cisse & Frère';
 const companyServices = 'Fer à Beton - Ciment - Plomberie - Sanitaire';
 
-const companyOwnerName = 'Chez MOHAMED WOROFANA';
+const companyOwnerName = 'Chez MOHAMED CISSE';
 
 const companyAdresse =
   "Kabala sur la route d'université en face de la station PETRO BAMA";
